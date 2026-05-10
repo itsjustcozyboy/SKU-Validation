@@ -39,16 +39,16 @@ function SkuForm({ initialValue, onSubmit, onLoadSample, onReset }: SkuFormProps
           <button
             type="button"
             onClick={onLoadSample}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
           >
             {t('loadSample')}
           </button>
           <button
             type="button"
-              onClick={() => setFormData(samplePdrnCream)}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            onClick={() => setFormData(samplePdrnCream)}
+            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
           >
-            {t('fillDemoFields')}
+            {t('applyGuideFields')}
           </button>
           <button
             type="button"
@@ -58,6 +58,7 @@ function SkuForm({ initialValue, onSubmit, onLoadSample, onReset }: SkuFormProps
             {t('resetTest')}
           </button>
         </div>
+        <p className="mt-3 text-sm text-gray-600">{t('exampleGuideHint')}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">

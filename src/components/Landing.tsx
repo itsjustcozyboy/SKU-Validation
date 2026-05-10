@@ -43,6 +43,7 @@ function Landing({ onStart, onLoadSample }: LandingProps) {
             {t('loadSample')}
           </button>
         </div>
+        <p className="mt-3 text-sm text-gray-600">{t('exampleGuideLandingHint')}</p>
       </section>
       <section className="grid gap-4 md:grid-cols-3">
         <article className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
