@@ -29,18 +29,18 @@ const Header: React.FC<HeaderProps> = ({ onGoHome }) => {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={onGoHome}
-            className="rounded-md border border-gray-200 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            {t('home')}
-          </button>
-          <button
-            type="button"
             onClick={() => toggleLang()}
             aria-label="Toggle language"
             className="rounded-md border border-gray-200 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             {lang === 'en' ? '한국어' : 'EN'}
+          </button>
+          <button
+            type="button"
+            onClick={onGoHome}
+            className="rounded-md border border-gray-200 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            {t('home')}
           </button>
         </div>
       </div>
