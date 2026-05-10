@@ -5,13 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>US K-Beauty SKU Demand Test</title>
     <script>
-      if (window.location.hostname.endsWith('github.io') && !window.location.pathname.includes('/docs/')) {
-        window.location.replace('/SKU-Validation/docs/');
-      }
+      (async () => {
+        const isLocalDev = ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
+        if (isLocalDev) {
+          await import('/src/main.tsx');
+          return;
+        }
+
+        const siteBase = '/SKU-Validation/';
+        const buildResponse = await fetch(`${siteBase}build.json?ts=${Date.now()}`, { cache: 'no-store' });
+        if (!buildResponse.ok) {
+          throw new Error('Unable to load build manifest');
+        }
+
+        const buildInfo = await buildResponse.json();
+        const version = encodeURIComponent(buildInfo.version || Date.now().toString());
+
+        if (buildInfo.css) {
+          const styleLink = document.createElement('link');
+          styleLink.rel = 'stylesheet';
+          styleLink.href = `${siteBase}${buildInfo.css}?v=${version}`;
+          document.head.appendChild(styleLink);
+        }
+
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = `${siteBase}${buildInfo.js}?v=${version}`;
+        document.head.appendChild(script);
+      })().catch(() => {
+        document.body.innerHTML = '<main style="padding:24px;font-family:sans-serif">Unable to load the app.</main>';
+      });
     </script>
   </head>
   <body class="bg-white">
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

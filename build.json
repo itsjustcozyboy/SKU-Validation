@@ -1,0 +1,5 @@
+{
+  "version": "manual",
+  "js": "assets/app.js",
+  "css": "assets/app.css"
+}
