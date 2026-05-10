@@ -43,6 +43,39 @@ const pickCaution = (idx: number) => productionCautions[idx % productionCautions
 
 const genId = () => `${Date.now().toString(36)}-${Math.floor(Math.random() * 10000)}`;
 
+const toneStyleMap: Record<string, string> = {
+  Clinical: 'clinically precise',
+  Minimal: 'clean and minimal',
+  Trendy: 'trend-forward',
+  Natural: 'botanical-first',
+  Premium: 'premium sensory',
+  'Gen Z playful': 'playful and social-first',
+};
+
+const concernMessageMap: Record<string, string> = {
+  'Sensitive skin': 'calm visible redness and strengthen skin comfort',
+  'Barrier damage': 'repair a weakened barrier and support recovery',
+  Dullness: 'improve clarity and glow for tired skin',
+  'Acne-prone skin': 'balance excess oil while soothing blemish-prone areas',
+  Pores: 'refine rough texture and reduce pore visibility',
+  Dryness: 'deeply hydrate and lock in moisture',
+  'Aging concerns': 'support firmness and elasticity over time',
+  'Scalp care': 'rebalance scalp condition and reduce dryness',
+  'Daily glow': 'maintain healthy daily radiance',
+};
+
+const concernLabelMap: Record<string, string> = {
+  'Sensitive skin': 'Calm',
+  'Barrier damage': 'Barrier',
+  Dullness: 'Glow',
+  'Acne-prone skin': 'Clear',
+  Pores: 'Smooth',
+  Dryness: 'Hydra',
+  'Aging concerns': 'Firm',
+  'Scalp care': 'Scalp',
+  'Daily glow': 'Daily Glow',
+};
+
 export default function SkuHypothesisGenerator({ onUseHypothesis }: Props) {
   const { t } = useLocale();
 
@@ -151,84 +184,94 @@ export default function SkuHypothesisGenerator({ onUseHypothesis }: Props) {
   };
   const [targetConsumer, setTargetConsumer] = useState(targetConsumers[0]);
   const [mainConcern, setMainConcern] = useState('Sensitive skin');
-  const [priceRange, setPriceRange] = useState('25-$35');
+  const [priceRange, setPriceRange] = useState('$25-$35');
   const [brandTone, setBrandTone] = useState('Minimal');
   const [hypotheses, setHypotheses] = useState<SkuHypothesis[]>([]);
 
   const generate = () => {
-    const ingredientsLower = heroIngredients.join(', ').toLowerCase();
+    const fallbackIngredients = categoryIngredientMap[category] ?? [];
+    const selectedIngredients = heroIngredients.length > 0 ? heroIngredients : fallbackIngredients.slice(0, 3);
+    const ingredientText = selectedIngredients.length > 0 ? selectedIngredients.join(', ') : 'Panthenol';
+    const ingredientsLower = ingredientText.toLowerCase();
+    const mainIngredient = selectedIngredients[0] ?? 'Panthenol';
+    const subIngredient = selectedIngredients[1] ?? selectedIngredients[0] ?? 'Ceramide';
 
-    // Ingredient-led
-    let ingrConcept = 'Balanced care for healthy skin.';
+    let ingredientConcept = `${mainIngredient}-focused daily skin support.`;
     if (/pdrn|peptide|collagen|retinol/.test(ingredientsLower)) {
-      ingrConcept = 'Science-backed radiance and elasticity care.';
+      ingredientConcept = `${mainIngredient} + ${subIngredient} for visible elasticity and radiance.`;
     } else if (/centella|cica|heartleaf/.test(ingredientsLower)) {
-      ingrConcept = 'Calming barrier repair for sensitive skin.';
+      ingredientConcept = `${mainIngredient}-centered calming care for fragile skin days.`;
     } else if (/rice|snail|propolis|honey/.test(ingredientsLower)) {
-      ingrConcept = 'Nourishing glow and radiance formula.';
+      ingredientConcept = `${mainIngredient} nourishment for soft glow and smooth texture.`;
     }
 
-    // Problem-led
-    let problemConcept = 'Everyday soothing care.';
-    if (mainConcern === 'Sensitive skin') problemConcept = 'Barrier repair and calming daily care.';
-    if (mainConcern === 'Barrier damage') problemConcept = 'Barrier repair and skin comfort recovery.';
-    if (mainConcern === 'Dullness') problemConcept = 'Glow and radiance tone care.';
-    if (mainConcern === 'Acne-prone skin') problemConcept = 'Blemish-prone lightweight pore care.';
-    if (mainConcern === 'Dryness') problemConcept = 'Deep hydration and moisture lock.';
-    if (mainConcern === 'Aging concerns') problemConcept = 'Elasticity, firming and bounce care.';
+    const concernMessage = concernMessageMap[mainConcern] ?? 'support everyday skin balance';
+    const toneStyle = toneStyleMap[brandTone] ?? 'clean and focused';
+    const concernLabel = concernLabelMap[mainConcern] ?? 'Core';
 
-    // Occasion-led
-    const occasionIdeas = [
-      'Morning glow routine for fresh radiance.',
-      'Post-stress skin reset for calm and repair.',
-      'After-workout calming care for sensitive skin.',
-      'Travel-size recovery for on-the-go skin',
-      'Night repair routine for visible recovery.',
-      'Daily barrier ritual for long-term resilience.',
-    ];
+    const occasionIdeasByConcern: Record<string, string[]> = {
+      'Sensitive skin': ['Post-cleansing calming routine', 'Mask-after recovery touch', 'Low-irritation morning reset'],
+      'Barrier damage': ['Night barrier reset routine', 'Season-change skin rescue', 'Over-exfoliation recovery routine'],
+      Dullness: ['Morning bright-skin prep', 'Before-meeting glow reset', 'Weekend tone-up ritual'],
+      'Acne-prone skin': ['Humidity-day pore balance routine', 'Workout-after soothing step', 'Late-night sebum balance care'],
+      Dryness: ['Winter moisture shield routine', 'Flight/day-trip hydration ritual', 'Sleep-time hydration wrap'],
+      'Aging concerns': ['PM elasticity routine', 'Neck-and-face firming ritual', 'Makeup-before smoothing prep'],
+    };
 
-    const priceKey = priceRange;
-    const recommendedPrice = priceMap[priceKey] ?? 29.99;
+    const defaultOccasions = ['Morning glow routine', 'Post-stress skin reset', 'Travel recovery ritual'];
+    const occasionPool = occasionIdeasByConcern[mainConcern] ?? defaultOccasions;
+    const seed = `${brandName}-${category}-${mainConcern}-${targetConsumer}-${brandTone}-${ingredientText}`.length;
+    const pickedOccasion = occasionPool[seed % occasionPool.length];
+
+    const basePrice = priceMap[priceRange] ?? 29.99;
+    const premiumPrice = Math.max(9.99, Number((basePrice + 2).toFixed(2)));
+    const problemPrice = basePrice;
+    const trialPrice = Math.max(9.99, Number((basePrice - 2).toFixed(2)));
+
+    const ingredientSize = sizeByCategory(category);
+    const concernSize = category === 'Cream' ? '60ml comfort size' : sizeByCategory(category);
+    const occasionSize = category === 'Mask Pack' ? '3-sheet starter kit' : `mini ${sizeByCategory(category)}`;
+    const brandLabel = brandName || 'Brand';
 
     const hypo1: SkuHypothesis = {
       id: genId(),
-      name: `${brandName || 'Brand'} ${category} Radiance`,
+      name: `${brandLabel} ${mainIngredient} ${category} Boost`,
       conceptType: 'Ingredient-led',
       targetConsumer,
-      heroIngredients: heroIngredients.join(', '),
-      productConcept: ingrConcept,
-      positioningMessage: `${ingrConcept}`,
-      recommendedPrice,
-      recommendedSize: sizeByCategory(category),
-      testHypothesis: `Positioning around key ingredients will drive higher CTR among ${targetConsumer}.`,
+      heroIngredients: ingredientText,
+      productConcept: `A ${toneStyle} SKU that highlights hero actives: ${ingredientConcept}`,
+      positioningMessage: `${mainIngredient}-led performance care for ${targetConsumer.toLowerCase()} seeking visible ingredient credibility.`,
+      recommendedPrice: premiumPrice,
+      recommendedSize: ingredientSize,
+      testHypothesis: `Ingredient-first framing with ${mainIngredient} will improve CTA click-through for ${targetConsumer}.`,
       productionCaution: pickCaution(0),
     };
 
     const hypo2: SkuHypothesis = {
       id: genId(),
-      name: `${brandName || 'Brand'} ${category} Repair`,
+      name: `${brandLabel} ${concernLabel} ${category} Rescue`,
       conceptType: 'Problem-led',
       targetConsumer,
-      heroIngredients,
-      productConcept: problemConcept,
-      positioningMessage: `${problemConcept}`,
-      recommendedPrice,
-      recommendedSize: sizeByCategory(category),
-      testHypothesis: `Messaging focused on ${mainConcern} will increase signups among ${targetConsumer}.`,
+      heroIngredients: ingredientText,
+      productConcept: `Focused solution concept to ${concernMessage} with ${mainIngredient} and ${subIngredient}.`,
+      positioningMessage: `${mainConcern} focused message for ${targetConsumer.toLowerCase()} who need a clear and practical benefit.`,
+      recommendedPrice: problemPrice,
+      recommendedSize: concernSize,
+      testHypothesis: `${mainConcern} problem-solution messaging will lift waitlist conversion among ${targetConsumer}.`,
       productionCaution: pickCaution(1),
     };
 
     const hypo3: SkuHypothesis = {
       id: genId(),
-      name: `${brandName || 'Brand'} ${category} Daily`,
+      name: `${brandLabel} ${category} Routine Edit`,
       conceptType: 'Occasion-led',
       targetConsumer,
-      heroIngredients,
-      productConcept: occasionIdeas[Math.floor(Math.random() * occasionIdeas.length)],
-      positioningMessage: `Designed for ${occasionIdeas[Math.floor(Math.random() * occasionIdeas.length)]}`,
-      recommendedPrice,
-      recommendedSize: sizeByCategory(category),
-      testHypothesis: `An occasion-led message will resonate during key daily routines for ${targetConsumer}.`,
+      heroIngredients: ingredientText,
+      productConcept: `${pickedOccasion} using ${mainIngredient} to create a repeatable daily ritual touchpoint.`,
+      positioningMessage: `Built for ${pickedOccasion.toLowerCase()} to improve routine fit and repeat intent.`,
+      recommendedPrice: trialPrice,
+      recommendedSize: occasionSize,
+      testHypothesis: `Occasion-led storytelling around ${pickedOccasion.toLowerCase()} will increase return visits from ${targetConsumer}.`,
       productionCaution: pickCaution(2),
     };
 

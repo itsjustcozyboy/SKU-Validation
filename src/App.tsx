@@ -82,11 +82,15 @@ function App() {
     addMetrics(simulateVisitors(skuInput, 100));
   };
 
+  const handleGoHome = () => {
+    setStep('landing');
+  };
+
   const demandResult = useMemo(() => calculateDemandResult(skuInput, metrics), [skuInput, metrics]);
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Header />
+      <Header onGoHome={handleGoHome} />
       {step === 'landing' && <Landing onStart={() => setStep('hypothesis')} onLoadSample={loadSample} />}
 
       {step === 'hypothesis' && <SkuHypothesisGenerator onUseHypothesis={handleUseHypothesis} />}
