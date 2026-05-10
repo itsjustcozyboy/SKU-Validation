@@ -17,18 +17,12 @@ const priceMap: Record<string, number> = {
 
 const sizeByCategory = (category: string): string => {
   switch (category) {
-    case 'Toner Pad':
-      return '70 pads full size';
-    case 'Cream':
-      return '50ml full size';
-    case 'Serum':
-      return '30ml full size';
-    case 'Mask Pack':
-      return '5 sheets';
-    case 'Hair/Scalp Care':
-      return '150ml full size';
-    default:
-      return 'trial size';
+    case 'Toner Pad': return '70 pads full size';
+    case 'Cream': return '50ml full size';
+    case 'Serum': return '30ml full size';
+    case 'Mask Pack': return '5 sheets';
+    case 'Hair/Scalp Care': return '150ml full size';
+    default: return 'trial size';
   }
 };
 
@@ -39,8 +33,6 @@ const productionCautions = [
   'Demand Score가 70점 미만이면 초도 생산 수량을 줄이고 재테스트하는 것을 권장합니다.',
 ];
 
-const pickCaution = (idx: number) => productionCautions[idx % productionCautions.length];
-
 const genId = () => `${Date.now().toString(36)}-${Math.floor(Math.random() * 10000)}`;
 
 const toneStyleMap: Record<string, string> = {
@@ -50,18 +42,6 @@ const toneStyleMap: Record<string, string> = {
   Natural: 'botanical-first',
   Premium: 'premium sensory',
   'Gen Z playful': 'playful and social-first',
-};
-
-const concernMessageMap: Record<string, string> = {
-  'Sensitive skin': 'calm visible redness and strengthen skin comfort',
-  'Barrier damage': 'repair a weakened barrier and support recovery',
-  Dullness: 'improve clarity and glow for tired skin',
-  'Acne-prone skin': 'balance excess oil while soothing blemish-prone areas',
-  Pores: 'refine rough texture and reduce pore visibility',
-  Dryness: 'deeply hydrate and lock in moisture',
-  'Aging concerns': 'support firmness and elasticity over time',
-  'Scalp care': 'rebalance scalp condition and reduce dryness',
-  'Daily glow': 'maintain healthy daily radiance',
 };
 
 const concernLabelMap: Record<string, string> = {
@@ -76,97 +56,48 @@ const concernLabelMap: Record<string, string> = {
   'Daily glow': 'Daily Glow',
 };
 
+type StepType = 'step1' | 'step2' | 'step3' | 'results';
+
 export default function SkuHypothesisGenerator({ onUseHypothesis }: Props) {
   const { t } = useLocale();
-
+  const [currentStep, setCurrentStep] = useState<StepType>('step1');
   const [brandName, setBrandName] = useState('');
   const [category, setCategory] = useState(categories[0]);
   const [heroIngredients, setHeroIngredients] = useState<string[]>([]);
   const [ingredientInput, setIngredientInput] = useState('');
+  const [targetConsumer, setTargetConsumer] = useState(targetConsumers[0]);
+  const [mainConcern, setMainConcern] = useState('Sensitive skin');
+  const [priceRange, setPriceRange] = useState('$25-$35');
+  const [brandTone, setBrandTone] = useState('Minimal');
+  const [hypotheses, setHypotheses] = useState<SkuHypothesis[]>([]);
+
   const knownIngredients = [
-    'Panthenol',
-    '판테놀',
-    'Houttuynia cordata',
-    '어성초',
-    'PDRN',
-    'Peptide',
-    'Niacinamide',
-    '나이아신아마이드',
-    'Centella Asiatica',
-    '센텔라',
-    'Madecassoside',
-    'Snail',
-    'Mucin',
-    'Rice',
-    'Propolis',
-    'Honey',
-    'Retinol',
-    'Collagen',
-    'Hyaluronic Acid',
-    'Hyaluron',
-    'Ceramide',
-    'Adenosine',
-    'Betaine',
-    'Allantoin',
-    'PHA',
-    'AHA',
-    'BHA',
-    'Salicylic Acid',
-    'Azelaic Acid',
-    'Tranexamic Acid',
-    'Arbutin',
-    'Licorice',
-    'Glutathione',
-    'Vitamin C',
-    'Ascorbic Acid',
-    'Green Tea',
-    'Camellia',
-    'Tea Tree',
-    'Chamomile',
-    'Rose Extract',
-    'Peony',
-    'Mugwort',
-    'Centella',
-    'Panax Ginseng',
-    'Ginseng',
-    'Squalane',
-    'Shea Butter',
-    'Squalene',
-    'CICA',
-    'Beta-Glucan',
-    'SPF',
+    'Panthenol', 'PDRN', 'Peptide', 'Niacinamide', 'Centella Asiatica', 'Madecassoside', 'Snail', 'Mucin', 'Rice',
+    'Propolis', 'Honey', 'Retinol', 'Collagen', 'Hyaluronic Acid', 'Ceramide', 'Adenosine', 'Allantoin',
+    'PHA', 'AHA', 'BHA', 'Salicylic Acid', 'Vitamin C', 'Green Tea', 'Tea Tree', 'Arbutin', 'CICA', 'SPF',
   ];
 
   const categoryIngredientMap: Record<string, string[]> = {
     'Cream': ['Ceramide', 'Shea Butter', 'Squalane', 'Panthenol', 'Hyaluronic Acid'],
     'Serum': ['Niacinamide', 'Peptide', 'Adenosine', 'Hyaluronic Acid', 'Vitamin C'],
     'Toner Pad': ['AHA', 'PHA', 'Niacinamide', 'Panthenol'],
-    'Sunscreen': ['SPF', 'Squalane'],
-    'Cleanser': ['Centella Asiatica', 'Tea Tree', 'Betaine', 'Panthenol'],
     'Mask Pack': ['Snail', 'Propolis', 'Honey', 'Rice'],
-    'Hair/Scalp Care': ['Panthenol', 'Tea Tree', 'Squalane'],
-    'Makeup': ['Squalane', 'Hyaluronic Acid'],
-    'Other': ['Panthenol', 'Centella Asiatica', 'Hyaluronic Acid'],
-  };
-
-  const getCategorySuggestions = (cat: string) => {
-    const mapped = categoryIngredientMap[cat] ?? [];
-    // keep only known ingredients and not already selected
-    return mapped.filter((m) => knownIngredients.includes(m) && !heroIngredients.includes(m));
   };
 
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
+  const getCategorySuggestions = (cat: string) => {
+    const mapped = categoryIngredientMap[cat] ?? [];
+    return mapped.filter((m) => !heroIngredients.includes(m));
+  };
+
   const updateSuggestions = (text: string) => {
     if (!text.trim()) return setSuggestions([]);
     const q = text.toLowerCase();
-    setSuggestions(
-      knownIngredients.filter((k) => k.toLowerCase().includes(q) && !heroIngredients.includes(k)).slice(0, 8),
-    );
+    setSuggestions(knownIngredients.filter((k) => k.toLowerCase().includes(q) && !heroIngredients.includes(k)).slice(0, 8));
   };
 
   useEffect(() => {
-    // when category changes and there's no ingredient input, show category suggestions
     if (!ingredientInput.trim()) {
       setSuggestions(getCategorySuggestions(category));
     }
@@ -182,231 +113,252 @@ export default function SkuHypothesisGenerator({ onUseHypothesis }: Props) {
   const removeIngredient = (ing: string) => {
     setHeroIngredients((prev) => prev.filter((i) => i !== ing));
   };
-  const [targetConsumer, setTargetConsumer] = useState(targetConsumers[0]);
-  const [mainConcern, setMainConcern] = useState('Sensitive skin');
-  const [priceRange, setPriceRange] = useState('$25-$35');
-  const [brandTone, setBrandTone] = useState('Minimal');
-  const [hypotheses, setHypotheses] = useState<SkuHypothesis[]>([]);
 
   const generate = () => {
     const fallbackIngredients = categoryIngredientMap[category] ?? [];
     const selectedIngredients = heroIngredients.length > 0 ? heroIngredients : fallbackIngredients.slice(0, 3);
-    const ingredientText = selectedIngredients.length > 0 ? selectedIngredients.join(', ') : 'Panthenol';
-    const ingredientsLower = ingredientText.toLowerCase();
+    const ingredientText = selectedIngredients.join(', ') || 'Panthenol';
     const mainIngredient = selectedIngredients[0] ?? 'Panthenol';
     const subIngredient = selectedIngredients[1] ?? selectedIngredients[0] ?? 'Ceramide';
+    const brandLabel = brandName || 'Brand';
+    const basePrice = priceMap[priceRange] ?? 29.99;
+    const ingredientSize = sizeByCategory(category);
 
-    let ingredientConcept = `${mainIngredient}-focused daily skin support.`;
-    if (/pdrn|peptide|collagen|retinol/.test(ingredientsLower)) {
-      ingredientConcept = `${mainIngredient} + ${subIngredient} for visible elasticity and radiance.`;
-    } else if (/centella|cica|heartleaf/.test(ingredientsLower)) {
-      ingredientConcept = `${mainIngredient}-centered calming care for fragile skin days.`;
-    } else if (/rice|snail|propolis|honey/.test(ingredientsLower)) {
-      ingredientConcept = `${mainIngredient} nourishment for soft glow and smooth texture.`;
-    }
-
-    const concernMessage = concernMessageMap[mainConcern] ?? 'support everyday skin balance';
+    const pickCaution = (idx: number) => productionCautions[idx % productionCautions.length];
     const toneStyle = toneStyleMap[brandTone] ?? 'clean and focused';
     const concernLabel = concernLabelMap[mainConcern] ?? 'Core';
 
-    const occasionIdeasByConcern: Record<string, string[]> = {
-      'Sensitive skin': ['Post-cleansing calming routine', 'Mask-after recovery touch', 'Low-irritation morning reset'],
-      'Barrier damage': ['Night barrier reset routine', 'Season-change skin rescue', 'Over-exfoliation recovery routine'],
-      Dullness: ['Morning bright-skin prep', 'Before-meeting glow reset', 'Weekend tone-up ritual'],
-      'Acne-prone skin': ['Humidity-day pore balance routine', 'Workout-after soothing step', 'Late-night sebum balance care'],
-      Dryness: ['Winter moisture shield routine', 'Flight/day-trip hydration ritual', 'Sleep-time hydration wrap'],
-      'Aging concerns': ['PM elasticity routine', 'Neck-and-face firming ritual', 'Makeup-before smoothing prep'],
-    };
-
-    const defaultOccasions = ['Morning glow routine', 'Post-stress skin reset', 'Travel recovery ritual'];
-    const occasionPool = occasionIdeasByConcern[mainConcern] ?? defaultOccasions;
-    const seed = `${brandName}-${category}-${mainConcern}-${targetConsumer}-${brandTone}-${ingredientText}`.length;
-    const pickedOccasion = occasionPool[seed % occasionPool.length];
-
-    const basePrice = priceMap[priceRange] ?? 29.99;
-    const premiumPrice = Math.max(9.99, Number((basePrice + 2).toFixed(2)));
-    const problemPrice = basePrice;
-    const trialPrice = Math.max(9.99, Number((basePrice - 2).toFixed(2)));
-
-    const ingredientSize = sizeByCategory(category);
-    const concernSize = category === 'Cream' ? '60ml comfort size' : sizeByCategory(category);
-    const occasionSize = category === 'Mask Pack' ? '3-sheet starter kit' : `mini ${sizeByCategory(category)}`;
-    const brandLabel = brandName || 'Brand';
-
     const hypo1: SkuHypothesis = {
       id: genId(),
-      name: `${brandLabel} ${mainIngredient} ${category} Boost`,
+      name: `${brandLabel} ${mainIngredient} ${category}`,
       conceptType: 'Ingredient-led',
       targetConsumer,
       heroIngredients: ingredientText,
-      productConcept: `A ${toneStyle} SKU that highlights hero actives: ${ingredientConcept}`,
-      positioningMessage: `${mainIngredient}-led performance care for ${targetConsumer.toLowerCase()} seeking visible ingredient credibility.`,
-      recommendedPrice: premiumPrice,
+      productConcept: `A ${toneStyle} SKU featuring ${ingredientText}`,
+      positioningMessage: `${mainIngredient}-led performance care for ${targetConsumer.toLowerCase()}`,
+      recommendedPrice: basePrice + 2,
       recommendedSize: ingredientSize,
-      testHypothesis: `Ingredient-first framing with ${mainIngredient} will improve CTA click-through for ${targetConsumer}.`,
+      testHypothesis: `Ingredient-first messaging will improve conversions`,
       productionCaution: pickCaution(0),
     };
 
     const hypo2: SkuHypothesis = {
       id: genId(),
-      name: `${brandLabel} ${concernLabel} ${category} Rescue`,
+      name: `${brandLabel} ${concernLabel} ${category}`,
       conceptType: 'Problem-led',
       targetConsumer,
       heroIngredients: ingredientText,
-      productConcept: `Focused solution concept to ${concernMessage} with ${mainIngredient} and ${subIngredient}.`,
-      positioningMessage: `${mainConcern} focused message for ${targetConsumer.toLowerCase()} who need a clear and practical benefit.`,
-      recommendedPrice: problemPrice,
-      recommendedSize: concernSize,
-      testHypothesis: `${mainConcern} problem-solution messaging will lift waitlist conversion among ${targetConsumer}.`,
+      productConcept: `Focused solution with ${mainIngredient} and ${subIngredient}`,
+      positioningMessage: `${mainConcern} focused for ${targetConsumer.toLowerCase()}`,
+      recommendedPrice: basePrice,
+      recommendedSize: ingredientSize,
+      testHypothesis: `Problem-solution messaging will lift conversion`,
       productionCaution: pickCaution(1),
     };
 
     const hypo3: SkuHypothesis = {
       id: genId(),
-      name: `${brandLabel} ${category} Routine Edit`,
+      name: `${brandLabel} ${category} Routine`,
       conceptType: 'Occasion-led',
       targetConsumer,
       heroIngredients: ingredientText,
-      productConcept: `${pickedOccasion} using ${mainIngredient} to create a repeatable daily ritual touchpoint.`,
-      positioningMessage: `Built for ${pickedOccasion.toLowerCase()} to improve routine fit and repeat intent.`,
-      recommendedPrice: trialPrice,
-      recommendedSize: occasionSize,
-      testHypothesis: `Occasion-led storytelling around ${pickedOccasion.toLowerCase()} will increase return visits from ${targetConsumer}.`,
+      productConcept: `Perfect for your daily ritual`,
+      positioningMessage: `Built for routine fit and repeat intent`,
+      recommendedPrice: basePrice - 1,
+      recommendedSize: `mini ${ingredientSize}`,
+      testHypothesis: `Occasion-led storytelling will increase return visits`,
       productionCaution: pickCaution(2),
     };
 
     setHypotheses([hypo1, hypo2, hypo3]);
+    setCurrentStep('results');
   };
 
-  return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h2 className="text-2xl font-bold text-gray-900">{t('skuHypothesisGeneratorTitle')}</h2>
-        <p className="mt-2 text-sm text-gray-600">{t('mission')}</p>
-      </div>
-
-      <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="space-y-2 text-sm font-medium text-gray-700">
-            {t('brandName')}
-            <input value={brandName} onChange={(e) => setBrandName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2" />
-          </label>
-          <label className="space-y-2 text-sm font-medium text-gray-700">
-            {t('productCategory')}
-            <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2">
-              {categories.map((c) => (
-                <option key={c} value={c}>{t(`category.${c}`)}</option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <label className="space-y-2 text-sm font-medium text-gray-700">
-          {t('heroIngredients')}
-          <div className="relative">
-            <input
-              value={ingredientInput}
-              onChange={(e) => {
-                setIngredientInput(e.target.value);
-                updateSuggestions(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  const val = ingredientInput.trim();
-                  if (val) addIngredient(val);
-                }
-              }}
-              placeholder={t('ingredientPlaceholder')}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2"
-            />
-            {suggestions.length > 0 && (
-              <ul className="absolute z-10 mt-1 max-h-40 w-full overflow-auto rounded-md border bg-white p-2 shadow-sm">
-                {suggestions.map((s) => (
-                  <li key={s} className="cursor-pointer px-2 py-1 text-sm hover:bg-gray-100" onClick={() => addIngredient(s)}>
-                    {s}
-                  </li>
+  if (currentStep === 'step1') {
+    return (
+      <div className="max-w-2xl mx-auto px-6 py-20 md:py-32">
+        <div className="space-y-8">
+          <div>
+            <p className="caption text-blue-600 mb-4">Step 1 of 3</p>
+            <h2 className="section-title mb-4">Start with your brand</h2>
+            <p className="body-large text-gray-600">Tell us about your brand and product category.</p>
+          </div>
+          <div className="space-y-6">
+            <label className="block">
+              <p className="body-regular font-semibold mb-2">Brand Name</p>
+              <input
+                type="text"
+                value={brandName}
+                onChange={(e) => setBrandName(e.target.value)}
+                placeholder="e.g., Glow Labs"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </label>
+            <label className="block">
+              <p className="body-regular font-semibold mb-2">Product Category</p>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {categories.map((c) => (
+                  <option key={c} value={c}>{t(`category.${c}`)}</option>
                 ))}
-              </ul>
+              </select>
+            </label>
+          </div>
+          <div className="flex gap-4 pt-8">
+            <button
+              onClick={() => setCurrentStep('step2')}
+              disabled={!brandName.trim()}
+              className="btn-primary disabled:opacity-50"
+            >
+              Next → Ingredients
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentStep === 'step2') {
+    return (
+      <div className="max-w-2xl mx-auto px-6 py-20 md:py-32">
+        <div className="space-y-8">
+          <div>
+            <p className="caption text-blue-600 mb-4">Step 2 of 3</p>
+            <h2 className="section-title mb-4">Choose hero ingredients</h2>
+            <p className="body-large text-gray-600">Select up to 3 key ingredients or skip for defaults.</p>
+          </div>
+          <div className="space-y-4">
+            <div className="relative">
+              <p className="body-regular font-semibold mb-2">Search ingredients</p>
+              <input
+                type="text"
+                value={ingredientInput}
+                onChange={(e) => { setIngredientInput(e.target.value); updateSuggestions(e.target.value); }}
+                placeholder="e.g., PDRN, Centella"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {suggestions.length > 0 && (
+                <ul className="absolute z-10 mt-1 w-full max-h-40 overflow-auto rounded-lg border bg-white shadow-lg">
+                  {suggestions.map((s) => (
+                    <li key={s} onClick={() => addIngredient(s)} className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">{s}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            {heroIngredients.length > 0 && (
+              <div className="space-y-2">
+                <p className="body-small font-medium text-gray-600">Selected ({heroIngredients.length}/3)</p>
+                <div className="flex flex-wrap gap-2">
+                  {heroIngredients.map((ing) => (
+                    <button key={ing} onClick={() => removeIngredient(ing)} className="inline-flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-900 rounded-full text-sm font-medium hover:bg-blue-200">
+                      {ing} <span>×</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
-
-          <div className="mt-2 flex flex-wrap gap-2">
-            {heroIngredients.map((h) => (
-              <button key={h} type="button" onClick={() => removeIngredient(h)} className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-sm">
-                <span>{h}</span>
-                <span className="text-xs text-gray-500">✕</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-4">
-            <p className="mb-2 text-sm font-medium text-gray-700">{t('suggestedForCategory')}</p>
-            <div className="flex flex-wrap gap-2">
-              {getCategorySuggestions(category).map((s) => (
-                <button key={s} type="button" onClick={() => addIngredient(s)} className="inline-flex items-center gap-2 rounded-full bg-gray-50 px-3 py-1 text-sm hover:bg-gray-100">
-                  {s}
-                </button>
-              ))}
+            <div className="space-y-2 pt-4 border-t">
+              <p className="body-small font-medium text-gray-600">Popular for {category}</p>
+              <div className="flex flex-wrap gap-2">
+                {getCategorySuggestions(category).map((s) => (
+                  <button key={s} onClick={() => addIngredient(s)} className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-900 rounded-full text-sm font-medium hover:bg-gray-200">
+                    + {s}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </label>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <label className="space-y-2 text-sm font-medium text-gray-700">
-            {t('targetConsumer')}
-            <select value={targetConsumer} onChange={(e) => setTargetConsumer(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2">
-              {targetConsumers.map((tc) => <option key={tc} value={tc}>{tc}</option>)}
-            </select>
-          </label>
-
-          <label className="space-y-2 text-sm font-medium text-gray-700">
-            {t('mainSkinConcern')}
-            <select value={mainConcern} onChange={(e) => setMainConcern(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2">
-              {['Sensitive skin','Barrier damage','Dullness','Acne-prone skin','Pores','Dryness','Aging concerns','Scalp care','Daily glow'].map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </label>
-
-          <label className="space-y-2 text-sm font-medium text-gray-700">
-            {t('desiredPriceRange')}
-            <select value={priceRange} onChange={(e) => setPriceRange(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2">
-              {['Under $15','$15-$25','$25-$35','$35-$50','Over $50'].map((p) => <option key={p} value={p}>{p}</option>)}
-            </select>
-          </label>
-        </div>
-
-        <label className="space-y-2 text-sm font-medium text-gray-700">
-          {t('brandTone')}
-          <select value={brandTone} onChange={(e) => setBrandTone(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2">
-            {['Clinical','Minimal','Trendy','Natural','Premium','Gen Z playful'].map((b) => <option key={b} value={b}>{b}</option>)}
-          </select>
-        </label>
-
-        <div className="flex gap-3">
-          <button onClick={generate} className="btn-primary">{t('generateButton')}</button>
+          <div className="flex gap-4 pt-8">
+            <button onClick={() => setCurrentStep('step1')} className="btn-ghost">← Back</button>
+            <button onClick={() => setCurrentStep('step3')} className="btn-primary">Next → Profile</button>
+          </div>
         </div>
       </div>
+    );
+  }
 
-      {hypotheses.length > 0 && (
-        <section className="mt-6 grid gap-4 md:grid-cols-3">
-          {hypotheses.map((h) => (
-            <article key={h.id} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center justify-between">
-                <h4 className="text-lg font-semibold text-gray-900">{h.name}</h4>
-                <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700">{h.conceptType}</span>
+  if (currentStep === 'step3') {
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-20 md:py-32">
+        <div className="space-y-8">
+          <div>
+            <p className="caption text-blue-600 mb-4">Step 3 of 3</p>
+            <h2 className="section-title mb-4">Define your target profile</h2>
+            <p className="body-large text-gray-600">Choose consumer, concern, price & tone to generate ideas.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <label><p className="body-regular font-semibold mb-2">Target Consumer</p>
+              <select value={targetConsumer} onChange={(e) => setTargetConsumer(e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                {targetConsumers.map((tc) => (<option key={tc} value={tc}>{tc}</option>))}
+              </select>
+            </label>
+            <label><p className="body-regular font-semibold mb-2">Main Skin Concern</p>
+              <select value={mainConcern} onChange={(e) => setMainConcern(e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                {['Sensitive skin', 'Barrier damage', 'Dullness', 'Acne-prone skin', 'Pores', 'Dryness', 'Aging concerns'].map((c) => (<option key={c} value={c}>{c}</option>))}
+              </select>
+            </label>
+            <label><p className="body-regular font-semibold mb-2">Price Range</p>
+              <select value={priceRange} onChange={(e) => setPriceRange(e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                {['Under $15', '$15-$25', '$25-$35', '$35-$50', 'Over $50'].map((p) => (<option key={p} value={p}>{p}</option>))}
+              </select>
+            </label>
+            <label><p className="body-regular font-semibold mb-2">Brand Tone</p>
+              <select value={brandTone} onChange={(e) => setBrandTone(e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                {['Clinical', 'Minimal', 'Trendy', 'Natural', 'Premium'].map((b) => (<option key={b} value={b}>{b}</option>))}
+              </select>
+            </label>
+          </div>
+          <div className="flex gap-4 pt-8">
+            <button onClick={() => setCurrentStep('step2')} className="btn-ghost">← Back</button>
+            <button onClick={generate} className="btn-primary">Generate 3 Ideas</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full bg-white">
+      <section className="max-w-5xl mx-auto px-6 py-16 md:py-20">
+        <div className="space-y-4">
+          <p className="caption text-blue-600">Generated Ideas</p>
+          <h2 className="section-title">3 SKU Concepts Ready to Test</h2>
+          <p className="body-large text-gray-600 max-w-2xl">Each concept approaches the market differently. Choose one to test.</p>
+        </div>
+      </section>
+      <section className="bg-gray-50 px-6 py-16 md:py-24">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {hypotheses.map((h) => (
+              <div key={h.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="px-6 pt-6 pb-2">
+                  <span className="inline-block px-3 py-1 bg-blue-100 text-blue-900 text-xs font-semibold rounded-full">{h.conceptType}</span>
+                </div>
+                <div className="px-6 pb-6 space-y-4">
+                  <div>
+                    <h3 className="subsection-title text-lg">{h.name}</h3>
+                    <p className="body-small text-gray-600 mt-2">{h.positioningMessage}</p>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span className="text-gray-600">Price:</span><span className="font-semibold">${h.recommendedPrice.toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-600">Size:</span><span className="font-semibold">{h.recommendedSize}</span></div>
+                  </div>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                    <p className="text-xs text-yellow-900">{h.productionCaution}</p>
+                  </div>
+                  <button onClick={() => onUseHypothesis(h)} className="w-full btn-primary mt-4">Test This →</button>
+                </div>
               </div>
-              <p className="mt-2 text-sm text-gray-700">{h.positioningMessage}</p>
-              <p className="mt-2 text-sm text-gray-700">Price: ${h.recommendedPrice.toFixed(2)}</p>
-              <p className="mt-1 text-sm text-gray-700">Size: {h.recommendedSize}</p>
-              <p className="mt-2 text-sm text-gray-700">Hypothesis: {h.testHypothesis}</p>
-              <p className="mt-2 text-sm text-red-600">{h.productionCaution}</p>
-              <div className="mt-4">
-                <button onClick={() => onUseHypothesis(h)} className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">{t('testThisSku')}</button>
-              </div>
-            </article>
-          ))}
-        </section>
-      )}
+            ))}
+          </div>
+          <div className="mt-12 text-center">
+            <button onClick={() => { setCurrentStep('step3'); setHypotheses([]); }} className="btn-ghost">← Adjust & Regenerate</button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
