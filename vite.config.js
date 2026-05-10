@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 export default defineConfig({
-    base: '/SKU-Validation/',
+    base: '/SKU-Validation/docs/',
     plugins: [react()],
 });
