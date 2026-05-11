@@ -95,7 +95,7 @@ export default function CustomerProductPage({ skuInput, onAddMetrics }: Props) {
                 placeholder={t('joinWaitlistPlaceholder')}
                 className="flex-1 rounded-lg border border-gray-200 px-3 py-2"
               />
-              <button type="submit" className="rounded-lg bg-white px-4 py-2 border">{t('submit')}</button>
+              <button type="submit" className="rounded-lg bg-white px-4 py-2 border">{t('joinWaitlist')}</button>
             </form>
           </div>
         </div>

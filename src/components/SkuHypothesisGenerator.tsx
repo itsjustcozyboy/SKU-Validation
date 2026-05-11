@@ -349,7 +349,7 @@ export default function SkuHypothesisGenerator({ onUseHypothesis }: Props) {
                   <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
                     <p className="text-xs text-yellow-900">{h.productionCaution}</p>
                   </div>
-                  <button onClick={() => onUseHypothesis(h)} className="w-full btn-primary mt-4">Test This →</button>
+                  <button onClick={() => onUseHypothesis(h)} className="w-full btn-primary mt-4">{t('testThisSku')}</button>
                 </div>
               </div>
             ))}

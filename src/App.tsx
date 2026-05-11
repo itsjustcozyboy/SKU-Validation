@@ -7,7 +7,6 @@ import Header from './components/Header';
 import AdminShell from './components/admin/AdminShell';
 import AdminDashboardHome from './components/admin/AdminDashboardHome';
 import AdminProductPreview from './components/admin/AdminProductPreview';
-import CustomerLandingPage from './components/customer/CustomerLandingPage';
 import CustomerProductPage from './components/customer/CustomerProductPage';
 import { AppStep, SkuHypothesis, SkuInput, TestMetrics } from './types';
 import { calculateDemandResult } from './utils/demandEngine';
@@ -40,7 +39,7 @@ const basePath = (() => {
   return '/';
 })();
 
-function getPortalFromPath(pathname: string): 'home' | 'admin' | 'brand' {
+function getPortalFromPath(pathname: string): 'home' | 'admin' | 'customer' {
   const normalizedPath = pathname.startsWith(basePath) ? pathname.slice(basePath.length) : pathname.replace(/^\/+/, '');
   const [portal] = normalizedPath.split('/').filter(Boolean).slice(-1);
 
@@ -48,14 +47,14 @@ function getPortalFromPath(pathname: string): 'home' | 'admin' | 'brand' {
     return 'admin';
   }
 
-  if (portal === 'brand' || portal === 'customer') {
-    return 'brand';
+  if (portal === 'customer') {
+    return 'customer';
   }
 
   return 'home';
 }
 
-function getPortalUrl(portal: 'home' | 'admin' | 'brand') {
+function getPortalUrl(portal: 'home' | 'admin' | 'customer') {
   if (portal === 'home') {
     return basePath;
   }
@@ -64,11 +63,9 @@ function getPortalUrl(portal: 'home' | 'admin' | 'brand') {
 }
 
 function App() {
-  const [portal, setPortal] = useState<'home' | 'admin' | 'brand'>('home');
+  const [portal, setPortal] = useState<'home' | 'admin' | 'customer'>('home');
   const [adminStep, setAdminStep] = useState<AppStep>('dashboard');
-  const [brandStep, setBrandStep] = useState<'landing' | 'preview'>('landing');
   const [skuInput, setSkuInput] = useState<SkuInput>(samplePdrnCream);
-  const [selectedHypothesis, setSelectedHypothesis] = useState<SkuHypothesis | null>(null);
   const [metrics, setMetrics] = useState<TestMetrics>(initialMetrics);
 
   useEffect(() => {
@@ -85,10 +82,9 @@ function App() {
   const resetTestState = useCallback(() => {
     setSkuInput(samplePdrnCream);
     setMetrics(initialMetrics);
-    setSelectedHypothesis(null);
   }, []);
 
-  const openPortal = useCallback((nextPortal: 'home' | 'admin' | 'brand') => {
+  const openPortal = useCallback((nextPortal: 'home' | 'admin' | 'customer') => {
     window.history.pushState({}, '', getPortalUrl(nextPortal));
     setPortal(nextPortal);
   }, []);
@@ -98,28 +94,19 @@ function App() {
     resetTestState();
   };
 
-  // customer flow reset is handled when navigating to customer or home
-
   const openAdminConsole = () => {
     openPortal('admin');
     resetTestState();
     setAdminStep('dashboard');
   };
 
-  const openBrandPortal = () => {
-    openPortal('brand');
+  const openCustomerWeb = () => {
+    openPortal('customer');
     resetTestState();
-    setBrandStep('landing');
   };
 
   const returnHome = () => {
     openPortal('home');
-  };
-
-  const loadSample = () => {
-    setSkuInput(samplePdrnCream);
-    setMetrics(initialMetrics);
-    setBrandStep('preview');
   };
 
   const loadAdminSample = () => {
@@ -148,7 +135,6 @@ function App() {
 
     setSkuInput(input);
     setMetrics(initialMetrics);
-    setSelectedHypothesis(hypo);
     setAdminStep('form');
   };
 
@@ -169,34 +155,22 @@ function App() {
     setAdminStep('preview');
   };
 
-  // simulation helper removed from App-level; use dashboard controls
-
   const demandResult = useMemo(() => calculateDemandResult(skuInput, metrics), [skuInput, metrics]);
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {portal === 'home' && <HomeGateway onOpenAdmin={openAdminConsole} onOpenBrand={openBrandPortal} />}
+      {portal === 'home' && <HomeGateway onOpenAdmin={openAdminConsole} onOpenCustomer={openCustomerWeb} />}
 
       {portal !== 'home' && (
         <Header
           onGoHome={returnHome}
-          onOpenAdmin={portal === 'admin' ? openAdminConsole : undefined}
-          onOpenBrand={portal === 'admin' ? openBrandPortal : undefined}
           activePortal={portal}
-          brandTitle={portal === 'brand' ? `${skuInput.brandName} — ${skuInput.productName}` : undefined}
+          portalTitle={portal === 'customer' ? `${skuInput.brandName} — ${skuInput.productName}` : undefined}
         />
       )}
 
-      {portal === 'brand' && (
-        <>
-          {brandStep === 'landing' && (
-            <CustomerLandingPage onStart={loadSample} onLoadSample={loadSample} />
-          )}
-
-          {brandStep === 'preview' && (
-            <CustomerProductPage skuInput={skuInput} onAddMetrics={addMetrics} />
-          )}
-        </>
+      {portal === 'customer' && (
+        <CustomerProductPage skuInput={skuInput} onAddMetrics={addMetrics} />
       )}
 
       {portal === 'admin' && (
@@ -218,6 +192,7 @@ function App() {
               metrics={metrics}
               onAddMetrics={addMetrics}
               onViewDashboard={() => setAdminStep('dashboard')}
+              onOpenCustomerWeb={openCustomerWeb}
             />
           )}
 
@@ -225,13 +200,12 @@ function App() {
             <AdminDashboardHome
               skuInput={skuInput}
               metrics={metrics}
+              demandResult={demandResult}
               onCreateSkuHypothesis={() => setAdminStep('hypothesis')}
               onBuildSkuTest={() => setAdminStep('form')}
               onLoadSample={loadAdminSample}
-              onOpenBrandPreview={() => {
-                openBrandPortal();
-                setBrandStep('preview');
-              }}
+              onViewReport={() => setAdminStep('report')}
+              onOpenCustomerWeb={openCustomerWeb}
             />
           )}
 
@@ -240,7 +214,6 @@ function App() {
               skuInput={skuInput}
               metrics={metrics}
               demandResult={demandResult}
-              selectedHypothesis={selectedHypothesis}
               onBackToDashboard={() => setAdminStep('dashboard')}
               onReset={resetAdminFlow}
             />

@@ -7,9 +7,10 @@ interface Props {
   metrics: TestMetrics;
   onAddMetrics: (delta: Partial<TestMetrics>) => void;
   onViewDashboard?: () => void;
+  onOpenCustomerWeb?: () => void;
 }
 
-export default function AdminProductPreview({ skuInput, metrics, onAddMetrics, onViewDashboard }: Props) {
+export default function AdminProductPreview({ skuInput, metrics, onAddMetrics, onViewDashboard, onOpenCustomerWeb }: Props) {
   const { t } = useLocale();
 
   return (

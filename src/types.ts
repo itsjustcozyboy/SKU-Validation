@@ -40,7 +40,7 @@ export interface DemandResult {
   recommendedPriceDirection?: string;
 }
 
-export type AppStep = 'landing' | 'hypothesis' | 'form' | 'preview' | 'dashboard' | 'report';
+export type AppStep = 'hypothesis' | 'form' | 'preview' | 'dashboard' | 'report';
 
 export interface SkuHypothesis {
   id: string;
