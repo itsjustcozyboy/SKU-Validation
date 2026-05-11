@@ -3,46 +3,43 @@ import { useLocale } from '../LocaleProvider';
 interface LandingProps {
   onStart: () => void;
   onLoadSample: () => void;
+  onOpenAdmin?: () => void;
 }
 
-function Landing({ onStart, onLoadSample }: LandingProps) {
+function Landing({ onStart, onLoadSample, onOpenAdmin }: LandingProps) {
   const { t } = useLocale();
   
   return (
     <div className="w-full bg-white">
-      {/* Hero Section */}
       <section className="hero">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center py-20 md:py-32 px-6 md:px-8">
-          {/* Hero Image */}
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-4 py-16 sm:px-6 md:grid-cols-2 md:px-8 md:py-24">
           <div className="order-2 md:order-1">
             <img
-              src="/SKU-Validation/images/hero-placeholder.svg"
+              src="/images/hero-placeholder.svg"
               alt="K-Beauty Validator"
-              className="w-full rounded-lg"
+              className="w-full rounded-3xl border border-slate-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)]"
             />
           </div>
-          
-          {/* Hero Content */}
-          <div className="order-1 md:order-2 space-y-6">
+
+          <div className="order-1 space-y-6 md:order-2">
             <div className="space-y-4">
-              <p className="caption text-blue-600 font-semibold">
-                {t('subtitle')}
+              <p className="caption text-slate-500 font-semibold">
+                {t('customerWeb')}
               </p>
-              <h1 className="hero-title">
-                K-Beauty<br />SKU Launch Validator
+              <h1 className="hero-title text-slate-950">
+                {t('customerWebTitle')}
               </h1>
-              <p className="body-large max-w-lg">
-                {t('problemText')}
+              <p className="body-large max-w-lg text-slate-600">
+                {t('customerWebSubtitle')}
               </p>
             </div>
-            
-            {/* CTA Buttons */}
+
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <button
                 onClick={onStart}
                 className="btn-primary"
               >
-                {t('createSkuTest')}
+                {t('startCustomerExperience')}
               </button>
               <button
                 onClick={onLoadSample}
@@ -50,119 +47,93 @@ function Landing({ onStart, onLoadSample }: LandingProps) {
               >
                 {t('loadSample')}
               </button>
+              {onOpenAdmin ? (
+                <button
+                  type="button"
+                  onClick={onOpenAdmin}
+                  className="btn-ghost"
+                >
+                  {t('adminConsole')}
+                </button>
+              ) : null}
             </div>
-            
-            <p className="body-small text-gray-500 pt-4">
-              {t('exampleGuideLandingHint')}
+
+            <p className="body-small text-slate-500 pt-4">
+              {t('customerJourneyText')}
             </p>
           </div>
         </div>
       </section>
 
-      {/* Value Proposition - Single Focus */}
-      <section className="section-spacing bg-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <div className="space-y-6">
-            <div>
-              <h2 className="section-title mb-4">{t('solution')}</h2>
-              <p className="body-large text-gray-700">
-                {t('solutionText')}
-              </p>
-            </div>
+      <section className="section-spacing bg-slate-50">
+        <div className="mx-auto max-w-5xl">
+          <div className="space-y-4">
+            <h2 className="section-title mb-2 text-center">{t('customerJourneyTitle')}</h2>
+            <p className="body-large text-center text-slate-600">
+              {t('customerJourneyText')}
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Process Steps - Clear, Simple Flow */}
       <section className="section-spacing bg-white">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="section-title mb-16 text-center">{t('step1')}</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {/* Step 1 */}
-            <div className="space-y-4 text-center">
-              <div className="flex justify-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-2xl">
-                  1
-                </div>
-              </div>
-              <h3 className="subsection-title">
-                Generate Ideas
-              </h3>
-              <p className="body-regular">
-                브랜드의 성분과 카테고리를 바탕으로 테스트 가능한 SKU 후보 3개를 생성합니다.
-              </p>
+        <div className="mx-auto max-w-6xl">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-6 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-950 text-xl font-semibold text-white">1</div>
+              <h3 className="subsection-title">{t('customerStep1Title')}</h3>
+              <p className="body-regular text-slate-600">{t('customerStep1Text')}</p>
             </div>
 
-            {/* Step 2 */}
-            <div className="space-y-4 text-center">
-              <div className="flex justify-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-2xl">
-                  2
-                </div>
-              </div>
-              <h3 className="subsection-title">
-                Measure Response
-              </h3>
-              <p className="body-regular">
-                가상 상세페이지와 CTA로 초기 소비자 반응을 측정합니다.
-              </p>
+            <div className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-6 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-950 text-xl font-semibold text-white">2</div>
+              <h3 className="subsection-title">{t('customerStep2Title')}</h3>
+              <p className="body-regular text-slate-600">{t('customerStep2Text')}</p>
             </div>
 
-            {/* Step 3 */}
-            <div className="space-y-4 text-center">
-              <div className="flex justify-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-2xl">
-                  3
-                </div>
-              </div>
-              <h3 className="subsection-title">
-                Make Decision
-              </h3>
-              <p className="body-regular">
-                Demand Score와 Production Risk를 바탕으로 양산 의사결정을 돕습니다.
+            <div className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-6 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-950 text-xl font-semibold text-white">3</div>
+              <h3 className="subsection-title">{t('customerStep3Title')}</h3>
+              <p className="body-regular text-slate-600">{t('customerStep3Text')}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-spacing bg-slate-50">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="section-title mb-12 text-center">{t('customerSignalsTitle')}</h2>
+
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+            <div className="space-y-3 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h3 className="subsection-title text-slate-950">{t('customerSignalsCardTitle')}</h3>
+              <p className="body-regular text-slate-600">
+                {t('customerSignalsCardText')}
+              </p>
+            </div>
+            <div className="space-y-3 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h3 className="subsection-title text-slate-950">{t('customerSignalsCardTitle2')}</h3>
+              <p className="body-regular text-slate-600">
+                {t('customerSignalsCardText2')}
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Feature Highlights */}
-      <section className="section-spacing bg-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="section-title mb-12 text-center">{t('output')}</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-3">
-              <h3 className="subsection-title text-blue-600">명확한 데이터</h3>
-              <p className="body-regular">
-                {t('outputText')}
-              </p>
-            </div>
-            <div className="space-y-3">
-              <h3 className="subsection-title text-blue-600">빠른 검증</h3>
-              <p className="body-regular">
-                시간이 제한된 의사결정 과정을 가속화합니다.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
       <section className="section-spacing bg-white">
         <div className="max-w-2xl mx-auto text-center space-y-8">
           <div>
-            <h2 className="section-title mb-4">준비되셨나요?</h2>
-            <p className="body-large text-gray-600">
-              지금 바로 시작하여 당신의 SKU 아이디어를 검증해보세요.
+            <h2 className="section-title mb-4">{t('customerCtaTitle')}</h2>
+            <p className="body-large text-slate-600">
+              {t('customerCtaText')}
             </p>
           </div>
           <button
             onClick={onStart}
             className="btn-primary mx-auto"
           >
-            {t('createSkuTest')}
+            {t('startCustomerExperience')}
           </button>
         </div>
       </section>

@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import HomeGateway from './components/HomeGateway';
 import Landing from './components/Landing';
 import SkuHypothesisGenerator from './components/SkuHypothesisGenerator';
 import ProductPreview from './components/ProductPreview';
@@ -8,7 +9,7 @@ import TestDashboard from './components/TestDashboard';
 import Header from './components/Header';
 import { AppStep, SkuInput, TestMetrics } from './types';
 import { calculateDemandResult, simulateVisitors } from './utils/demandEngine';
-import { emptySkuInput, samplePdrnCream } from './utils/sampleData';
+import { samplePdrnCream } from './utils/sampleData';
 
 const initialMetrics: TestMetrics = {
   pageViews: 0,
@@ -19,22 +20,113 @@ const initialMetrics: TestMetrics = {
   messageCLikes: 0,
 };
 
+const basePath = (() => {
+  if (typeof window === 'undefined') {
+    return '/';
+  }
+
+  const pathname = window.location.pathname;
+
+  if (pathname.startsWith('/SKU-Validation/docs/')) {
+    return '/SKU-Validation/docs/';
+  }
+
+  if (pathname.startsWith('/SKU-Validation/')) {
+    return '/SKU-Validation/';
+  }
+
+  return '/';
+})();
+
+function getPortalFromPath(pathname: string): 'home' | 'admin' | 'customer' {
+  const normalizedPath = pathname.startsWith(basePath) ? pathname.slice(basePath.length) : pathname.replace(/^\/+/, '');
+  const [portal] = normalizedPath.split('/').filter(Boolean).slice(-1);
+
+  if (portal === 'admin') {
+    return 'admin';
+  }
+
+  if (portal === 'customer') {
+    return 'customer';
+  }
+
+  return 'home';
+}
+
+function getPortalUrl(portal: 'home' | 'admin' | 'customer') {
+  if (portal === 'home') {
+    return basePath;
+  }
+
+  return `${basePath}${portal}`;
+}
+
 function App() {
-  const [step, setStep] = useState<AppStep>('landing');
-  const [skuInput, setSkuInput] = useState<SkuInput>(emptySkuInput);
+  const [portal, setPortal] = useState<'home' | 'admin' | 'customer'>('home');
+  const [adminStep, setAdminStep] = useState<AppStep>('dashboard');
+  const [customerStep, setCustomerStep] = useState<'landing' | 'preview'>('landing');
+  const [skuInput, setSkuInput] = useState<SkuInput>(samplePdrnCream);
   const [selectedHypothesis, setSelectedHypothesis] = useState<any | null>(null);
   const [metrics, setMetrics] = useState<TestMetrics>(initialMetrics);
 
-  const resetTest = () => {
-    setStep('landing');
-    setSkuInput(emptySkuInput);
+  useEffect(() => {
+    const syncPortalFromLocation = () => {
+      setPortal(getPortalFromPath(window.location.pathname));
+    };
+
+    syncPortalFromLocation();
+    window.addEventListener('popstate', syncPortalFromLocation);
+
+    return () => window.removeEventListener('popstate', syncPortalFromLocation);
+  }, []);
+
+  const resetAdminFlow = () => {
+    setAdminStep('dashboard');
+    setSkuInput(samplePdrnCream);
     setMetrics(initialMetrics);
+    setSelectedHypothesis(null);
+  };
+
+  const resetCustomerFlow = () => {
+    setCustomerStep('landing');
+    setSkuInput(samplePdrnCream);
+    setMetrics(initialMetrics);
+    setSelectedHypothesis(null);
+  };
+
+  const openAdminConsole = () => {
+    window.history.pushState({}, '', getPortalUrl('admin'));
+    setPortal('admin');
+    setSkuInput(samplePdrnCream);
+    setMetrics(initialMetrics);
+    setSelectedHypothesis(null);
+    setAdminStep('dashboard');
+  };
+
+  const openCustomerWeb = () => {
+    window.history.pushState({}, '', getPortalUrl('customer'));
+    setPortal('customer');
+    setSkuInput(samplePdrnCream);
+    setMetrics(initialMetrics);
+    setSelectedHypothesis(null);
+    setCustomerStep('landing');
+  };
+
+  const returnHome = () => {
+    window.history.pushState({}, '', getPortalUrl('home'));
+    setPortal('home');
   };
 
   const loadSample = () => {
     setSkuInput(samplePdrnCream);
     setMetrics(initialMetrics);
-    setStep('form');
+    setCustomerStep('preview');
+  };
+
+  const loadAdminSample = () => {
+    setSkuInput(samplePdrnCream);
+    setMetrics(initialMetrics);
+    setAdminStep('form');
   };
 
   const handleUseHypothesis = (hypo: any) => {
@@ -58,7 +150,7 @@ function App() {
     setSkuInput(input);
     setMetrics(initialMetrics);
     setSelectedHypothesis(hypo);
-    setStep('form');
+    setAdminStep('form');
   };
 
   const addMetrics = useCallback((delta: Partial<TestMetrics>) => {
@@ -75,66 +167,93 @@ function App() {
   const handleFormSubmit = (input: SkuInput) => {
     setSkuInput(input);
     setMetrics(initialMetrics);
-    setStep('preview');
+    setAdminStep('preview');
   };
 
   const handleSimulateVisitors = () => {
     addMetrics(simulateVisitors(skuInput, 100));
   };
 
-  const handleGoHome = () => {
-    setStep('landing');
-  };
-
   const demandResult = useMemo(() => calculateDemandResult(skuInput, metrics), [skuInput, metrics]);
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Header onGoHome={handleGoHome} />
-      {step === 'landing' && <Landing onStart={() => setStep('hypothesis')} onLoadSample={loadSample} />}
+      {portal === 'home' && <HomeGateway onOpenAdmin={openAdminConsole} onOpenCustomer={openCustomerWeb} />}
 
-      {step === 'hypothesis' && <SkuHypothesisGenerator onUseHypothesis={handleUseHypothesis} />}
-
-      {step === 'form' && (
-        <SkuForm
-          initialValue={skuInput}
-          onSubmit={handleFormSubmit}
-          onLoadSample={loadSample}
-          onReset={resetTest}
+      {portal !== 'home' && (
+        <Header
+          onGoHome={returnHome}
+          onOpenAdmin={openAdminConsole}
+          onOpenCustomer={openCustomerWeb}
+          activePortal={portal}
         />
       )}
 
-      {step === 'preview' && (
-        <ProductPreview
-          skuInput={skuInput}
-          metrics={metrics}
-          onAddMetrics={addMetrics}
-          onViewDashboard={() => setStep('dashboard')}
-          onReset={resetTest}
-        />
+      {portal === 'customer' && (
+        <>
+          {customerStep === 'landing' && (
+            <Landing onStart={loadSample} onLoadSample={loadSample} />
+          )}
+
+          {customerStep === 'preview' && (
+            <ProductPreview
+              skuInput={skuInput}
+              metrics={metrics}
+              onAddMetrics={addMetrics}
+              experienceMode="customer"
+              onReset={resetCustomerFlow}
+            />
+          )}
+        </>
       )}
 
-      {step === 'dashboard' && (
-        <TestDashboard
-          skuInput={skuInput}
-          metrics={metrics}
-          demandResult={demandResult}
-          onSimulateVisitors={handleSimulateVisitors}
-          onViewReport={() => setStep('report')}
-          onBackToPreview={() => setStep('preview')}
-          onReset={resetTest}
-        />
-      )}
+      {portal === 'admin' && (
+        <>
+          {adminStep === 'hypothesis' && <SkuHypothesisGenerator onUseHypothesis={handleUseHypothesis} />}
 
-      {step === 'report' && (
-        <Report
-          skuInput={skuInput}
-          metrics={metrics}
-          demandResult={demandResult}
-          selectedHypothesis={selectedHypothesis}
-          onBackToDashboard={() => setStep('dashboard')}
-          onReset={resetTest}
-        />
+          {adminStep === 'form' && (
+            <SkuForm
+              initialValue={skuInput}
+              onSubmit={handleFormSubmit}
+              onLoadSample={loadAdminSample}
+              onReset={resetAdminFlow}
+            />
+          )}
+
+          {adminStep === 'preview' && (
+            <ProductPreview
+              skuInput={skuInput}
+              metrics={metrics}
+              onAddMetrics={addMetrics}
+              experienceMode="admin"
+              onViewDashboard={() => setAdminStep('dashboard')}
+              onReset={resetAdminFlow}
+            />
+          )}
+
+          {adminStep === 'dashboard' && (
+            <TestDashboard
+              skuInput={skuInput}
+              metrics={metrics}
+              demandResult={demandResult}
+              onSimulateVisitors={handleSimulateVisitors}
+              onViewReport={() => setAdminStep('report')}
+              onBackToPreview={() => setAdminStep('preview')}
+              onReset={resetAdminFlow}
+            />
+          )}
+
+          {adminStep === 'report' && (
+            <Report
+              skuInput={skuInput}
+              metrics={metrics}
+              demandResult={demandResult}
+              selectedHypothesis={selectedHypothesis}
+              onBackToDashboard={() => setAdminStep('dashboard')}
+              onReset={resetAdminFlow}
+            />
+          )}
+        </>
       )}
     </div>
   );

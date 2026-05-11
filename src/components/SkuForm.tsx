@@ -233,7 +233,8 @@ function SkuForm({ initialValue, onSubmit, onLoadSample, onReset }: SkuFormProps
             {t('generateProductPage')}
           </button>
           <button
-            type="submit"
+            type="button"
+            onClick={() => onSubmit(formData)}
             className="btn-ghost"
           >
             {t('startSkuTest')}

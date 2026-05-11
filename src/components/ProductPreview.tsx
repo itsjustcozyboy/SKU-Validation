@@ -6,11 +6,12 @@ interface ProductPreviewProps {
   skuInput: SkuInput;
   metrics: TestMetrics;
   onAddMetrics: (delta: Partial<TestMetrics>) => void;
-  onViewDashboard: () => void;
+  experienceMode: 'admin' | 'customer';
+  onViewDashboard?: () => void;
   onReset: () => void;
 }
 
-function ProductPreview({ skuInput, metrics, onAddMetrics, onViewDashboard, onReset }: ProductPreviewProps) {
+function ProductPreview({ skuInput, metrics, onAddMetrics, experienceMode, onViewDashboard, onReset }: ProductPreviewProps) {
   const { t } = useLocale();
   const [email, setEmail] = useState('');
 
@@ -123,19 +124,21 @@ function ProductPreview({ skuInput, metrics, onAddMetrics, onViewDashboard, onRe
       </section>
 
       <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={onViewDashboard}
-          className="rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-800"
-        >
-          {t('viewDashboard')}
-        </button>
+        {experienceMode === 'admin' && onViewDashboard ? (
+          <button
+            type="button"
+            onClick={onViewDashboard}
+            className="rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-800"
+          >
+            {t('viewDashboard')}
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={onReset}
           className="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
         >
-          {t('resetTest')}
+          {experienceMode === 'customer' ? t('restartExperience') : t('resetTest')}
         </button>
       </div>
     </div>
