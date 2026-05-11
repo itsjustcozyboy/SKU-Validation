@@ -55,6 +55,7 @@ function HomeGateway({ onOpenAdmin, onOpenCustomer }: HomeGatewayProps) {
               </span>
             </button>
           </div>
+        </section>
       </div>
     </main>
   );

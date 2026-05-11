@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import HomeGateway from './components/HomeGateway';
-import Landing from './components/Landing';
 import SkuHypothesisGenerator from './components/SkuHypothesisGenerator';
-import ProductPreview from './components/ProductPreview';
 import Report from './components/Report';
 import SkuForm from './components/SkuForm';
-import TestDashboard from './components/TestDashboard';
 import Header from './components/Header';
+import AdminShell from './components/admin/AdminShell';
+import AdminDashboardHome from './components/admin/AdminDashboardHome';
+import AdminProductPreview from './components/admin/AdminProductPreview';
+import CustomerLandingPage from './components/customer/CustomerLandingPage';
+import CustomerProductPage from './components/customer/CustomerProductPage';
 import { AppStep, SkuHypothesis, SkuInput, TestMetrics } from './types';
-import { calculateDemandResult, simulateVisitors } from './utils/demandEngine';
+import { calculateDemandResult } from './utils/demandEngine';
 import { samplePdrnCream } from './utils/sampleData';
 
 const initialMetrics: TestMetrics = {
@@ -96,10 +98,7 @@ function App() {
     resetTestState();
   };
 
-  const resetCustomerFlow = () => {
-    setCustomerStep('landing');
-    resetTestState();
-  };
+  // customer flow reset is handled when navigating to customer or home
 
   const openAdminConsole = () => {
     openPortal('admin');
@@ -170,9 +169,7 @@ function App() {
     setAdminStep('preview');
   };
 
-  const handleSimulateVisitors = () => {
-    addMetrics(simulateVisitors(skuInput, 100));
-  };
+  // simulation helper removed from App-level; use dashboard controls
 
   const demandResult = useMemo(() => calculateDemandResult(skuInput, metrics), [skuInput, metrics]);
 
@@ -183,32 +180,27 @@ function App() {
       {portal !== 'home' && (
         <Header
           onGoHome={returnHome}
-          onOpenAdmin={openAdminConsole}
-          onOpenCustomer={openCustomerWeb}
+          onOpenAdmin={portal === 'admin' ? openAdminConsole : undefined}
+          onOpenCustomer={portal === 'admin' ? openCustomerWeb : undefined}
           activePortal={portal}
+          customerTitle={portal === 'customer' ? `${skuInput.brandName} — ${skuInput.productName}` : undefined}
         />
       )}
 
       {portal === 'customer' && (
         <>
           {customerStep === 'landing' && (
-            <Landing onStart={loadSample} onLoadSample={loadSample} />
+            <CustomerLandingPage onStart={loadSample} onLoadSample={loadSample} />
           )}
 
           {customerStep === 'preview' && (
-            <ProductPreview
-              skuInput={skuInput}
-              metrics={metrics}
-              onAddMetrics={addMetrics}
-              experienceMode="customer"
-              onReset={resetCustomerFlow}
-            />
+            <CustomerProductPage skuInput={skuInput} metrics={metrics} onAddMetrics={addMetrics} />
           )}
         </>
       )}
 
       {portal === 'admin' && (
-        <>
+        <AdminShell activeStep={adminStep} onSetStep={(s) => setAdminStep(s)}>
           {adminStep === 'hypothesis' && <SkuHypothesisGenerator onUseHypothesis={handleUseHypothesis} />}
 
           {adminStep === 'form' && (
@@ -221,25 +213,25 @@ function App() {
           )}
 
           {adminStep === 'preview' && (
-            <ProductPreview
+            <AdminProductPreview
               skuInput={skuInput}
               metrics={metrics}
               onAddMetrics={addMetrics}
-              experienceMode="admin"
               onViewDashboard={() => setAdminStep('dashboard')}
-              onReset={resetAdminFlow}
             />
           )}
 
           {adminStep === 'dashboard' && (
-            <TestDashboard
+            <AdminDashboardHome
               skuInput={skuInput}
               metrics={metrics}
-              demandResult={demandResult}
-              onSimulateVisitors={handleSimulateVisitors}
-              onViewReport={() => setAdminStep('report')}
-              onBackToPreview={() => setAdminStep('preview')}
-              onReset={resetAdminFlow}
+              onCreateSkuHypothesis={() => setAdminStep('hypothesis')}
+              onBuildSkuTest={() => setAdminStep('form')}
+              onLoadSample={loadAdminSample}
+              onOpenCustomerPreview={() => {
+                openCustomerWeb();
+                setCustomerStep('preview');
+              }}
             />
           )}
 
@@ -253,7 +245,7 @@ function App() {
               onReset={resetAdminFlow}
             />
           )}
-        </>
+        </AdminShell>
       )}
     </div>
   );
