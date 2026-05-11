@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "version": "2026-05-11T09:56:35.920Z",
+=======
+  "version": "7af879d0e3cae99947d51676ae947d59f34d86e7",
+>>>>>>> origin/main
   "js": "assets/app.js",
   "css": "assets/app.css"
 }
