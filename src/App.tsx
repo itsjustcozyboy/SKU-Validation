@@ -8,6 +8,7 @@ import AdminShell from './components/admin/AdminShell';
 import AdminDashboardHome from './components/admin/AdminDashboardHome';
 import AdminProductPreview from './components/admin/AdminProductPreview';
 import CustomerProductPage from './components/customer/CustomerProductPage';
+import CustomerLandingPage from './components/customer/CustomerLandingPage';
 import { AppStep, SkuHypothesis, SkuInput, TestMetrics } from './types';
 import { calculateDemandResult } from './utils/demandEngine';
 import { samplePdrnCream } from './utils/sampleData';
@@ -67,10 +68,16 @@ function App() {
   const [adminStep, setAdminStep] = useState<AppStep>('dashboard');
   const [skuInput, setSkuInput] = useState<SkuInput>(samplePdrnCream);
   const [metrics, setMetrics] = useState<TestMetrics>(initialMetrics);
+  const [customerView, setCustomerView] = useState<'landing' | 'product'>('landing');
 
   useEffect(() => {
     const syncPortalFromLocation = () => {
-      setPortal(getPortalFromPath(window.location.pathname));
+      const p = getPortalFromPath(window.location.pathname);
+      setPortal(p);
+      if (p === 'customer') {
+        const isProduct = window.location.pathname.includes('/product');
+        setCustomerView(isProduct ? 'product' : 'landing');
+      }
     };
 
     syncPortalFromLocation();
@@ -103,6 +110,14 @@ function App() {
   const openCustomerWeb = () => {
     openPortal('customer');
     resetTestState();
+    setCustomerView('landing');
+  };
+
+  const openCustomerProduct = () => {
+    openPortal('customer');
+    resetTestState();
+    setCustomerView('product');
+    window.history.pushState({}, '', `${getPortalUrl('customer')}/product`);
   };
 
   const returnHome = () => {
@@ -170,7 +185,11 @@ function App() {
       )}
 
       {portal === 'customer' && (
-        <CustomerProductPage skuInput={skuInput} onAddMetrics={addMetrics} />
+        (customerView === 'landing') ? (
+          <CustomerLandingPage onStart={() => setCustomerView('product')} onLoadSample={loadAdminSample} />
+        ) : (
+          <CustomerProductPage skuInput={skuInput} onAddMetrics={addMetrics} />
+        )
       )}
 
       {portal === 'admin' && (
@@ -192,7 +211,7 @@ function App() {
               metrics={metrics}
               onAddMetrics={addMetrics}
               onViewDashboard={() => setAdminStep('dashboard')}
-              onOpenCustomerWeb={openCustomerWeb}
+              onOpenCustomerWeb={openCustomerProduct}
             />
           )}
 
@@ -205,7 +224,7 @@ function App() {
               onBuildSkuTest={() => setAdminStep('form')}
               onLoadSample={loadAdminSample}
               onViewReport={() => setAdminStep('report')}
-              onOpenCustomerWeb={openCustomerWeb}
+              onOpenCustomerWeb={openCustomerProduct}
             />
           )}
 

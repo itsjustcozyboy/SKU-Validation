@@ -40,6 +40,9 @@ export default function AdminProductPreview({ skuInput, metrics, onAddMetrics, o
         </div>
 
         <div className="mt-4 space-y-2">
+          {onOpenCustomerWeb ? (
+            <button onClick={onOpenCustomerWeb} className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50">고객 웹 열기</button>
+          ) : null}
           {onViewDashboard ? (
             <button onClick={onViewDashboard} className="w-full rounded-lg bg-slate-900 px-4 py-2 text-white">{t('viewDashboard')}</button>
           ) : null}

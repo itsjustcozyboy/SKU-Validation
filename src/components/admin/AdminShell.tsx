@@ -13,6 +13,7 @@ export default function AdminShell({ activeStep, onSetStep, children }: Props) {
   const steps: { key: AppStep; label: string }[] = [
     { key: 'hypothesis', label: t('step1') },
     { key: 'form', label: t('step2') },
+    { key: 'preview', label: t('stepPreview') },
     { key: 'dashboard', label: t('step3') },
     { key: 'report', label: t('step4') },
   ];

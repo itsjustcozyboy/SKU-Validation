@@ -343,13 +343,16 @@ export default function SkuHypothesisGenerator({ onUseHypothesis }: Props) {
                     <p className="body-small text-gray-600 mt-2">{h.positioningMessage}</p>
                   </div>
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between"><span className="text-gray-600">Price:</span><span className="font-semibold">${h.recommendedPrice.toFixed(2)}</span></div>
-                    <div className="flex justify-between"><span className="text-gray-600">Size:</span><span className="font-semibold">{h.recommendedSize}</span></div>
+                    <div><span className="text-gray-600">타깃 고객:</span> <span className="font-semibold">{h.targetConsumer}</span></div>
+                    <div><span className="text-gray-600">핵심 성분:</span> <span className="font-semibold">{h.heroIngredients}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-600">가격:</span><span className="font-semibold">${h.recommendedPrice.toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-600">권장 용량:</span><span className="font-semibold">{h.recommendedSize}</span></div>
+                    <div className="mt-2 text-sm text-gray-700"><strong>테스트 가설:</strong> {h.testHypothesis}</div>
                   </div>
                   <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
                     <p className="text-xs text-yellow-900">{h.productionCaution}</p>
                   </div>
-                  <button onClick={() => onUseHypothesis(h)} className="w-full btn-primary mt-4">{t('testThisSku')}</button>
+                  <button onClick={() => onUseHypothesis(h)} className="w-full btn-primary mt-4">이 SKU로 고객 테스트 만들기</button>
                 </div>
               </div>
             ))}

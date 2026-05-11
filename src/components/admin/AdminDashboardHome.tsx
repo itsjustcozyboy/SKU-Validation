@@ -94,6 +94,31 @@ export default function AdminDashboardHome({
         </div>
       </div>
 
+      {/* Decision Summary (top) */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <div className="rounded-lg border border-slate-200 bg-white p-6">
+          <p className="text-sm font-medium text-slate-600">{t('launchDecision')}</p>
+          <p className="mt-3 text-2xl font-bold text-slate-900">{demandResult.launchDecision ?? launchDecision.label}</p>
+          <p className="mt-2 text-sm text-slate-600">{demandResult.launchDecision ? demandResult.recommendation : launchDecision.description}</p>
+        </div>
+
+        <div className="rounded-lg border border-slate-200 bg-white p-6">
+          <p className="text-sm font-medium text-slate-600">{t('demandScore')}</p>
+          <p className="mt-3 text-4xl font-bold text-slate-900">{Math.round(demandResult.demandScore)}</p>
+        </div>
+
+        <div className={`rounded-lg border border-slate-200 p-6 ${productionRisk.color.replace('text', 'bg')}`}>
+          <p className="text-sm font-medium">{t('productionRisk')}</p>
+          <p className="mt-3 text-2xl font-bold">{demandResult.productionRiskLevel ?? productionRisk.label}</p>
+          <p className="mt-2 text-xs whitespace-pre-line">{productionRisk.description}</p>
+        </div>
+
+        <div className="rounded-lg border border-slate-200 bg-white p-6">
+          <p className="text-sm font-medium text-slate-600">{t('recommendedAction')}</p>
+          <p className="mt-3 text-lg font-semibold text-slate-900">{demandResult.recommendation || '—'}</p>
+        </div>
+      </div>
+
       {/* Key Metrics Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border border-slate-200 bg-white p-6">

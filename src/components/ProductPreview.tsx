@@ -6,7 +6,7 @@ interface ProductPreviewProps {
   skuInput: SkuInput;
   metrics: TestMetrics;
   onAddMetrics: (delta: Partial<TestMetrics>) => void;
-  experienceMode: 'admin' | 'brand';
+  experienceMode: 'admin' | 'customer';
   onViewDashboard?: () => void;
   onReset: () => void;
 }
@@ -138,7 +138,7 @@ function ProductPreview({ skuInput, metrics, onAddMetrics, experienceMode, onVie
           onClick={onReset}
           className="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
         >
-          {experienceMode === 'brand' ? t('restartExperience') : t('resetTest')}
+          {experienceMode === 'customer' ? t('restartExperience') : t('resetTest')}
         </button>
       </div>
     </div>
