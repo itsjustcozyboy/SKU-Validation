@@ -2,10 +2,10 @@ import { useLocale } from '../LocaleProvider';
 
 interface HomeGatewayProps {
   onOpenAdmin: () => void;
-  onOpenCustomer: () => void;
+  onOpenBrand: () => void;
 }
 
-function HomeGateway({ onOpenAdmin, onOpenCustomer }: HomeGatewayProps) {
+function HomeGateway({ onOpenAdmin, onOpenBrand }: HomeGatewayProps) {
   const { t } = useLocale();
 
   return (
@@ -31,27 +31,27 @@ function HomeGateway({ onOpenAdmin, onOpenCustomer }: HomeGatewayProps) {
               className="group flex min-h-72 flex-col justify-between rounded-[1.75rem] border border-slate-200 bg-slate-950 p-6 text-left text-white transition-transform hover:-translate-y-1 hover:shadow-2xl"
             >
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-300">{t('adminConsole')}</p>
-                <h2 className="mt-4 text-3xl font-semibold leading-tight">{t('openAdminConsole')}</h2>
-                <p className="mt-3 max-w-md text-sm leading-6 text-slate-300">{t('homeGatewayAdminText')}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-300">{t('managerPortal')}</p>
+                <h2 className="mt-4 text-3xl font-semibold leading-tight">{t('openManagementConsole')}</h2>
+                <p className="mt-3 max-w-md text-sm leading-6 text-slate-300">{t('managerPortalText')}</p>
               </div>
               <span className="mt-8 inline-flex w-fit rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white">
-                {t('viewDashboard')}
+                {t('accessDashboard')}
               </span>
             </button>
 
             <button
               type="button"
-              onClick={onOpenCustomer}
+              onClick={onOpenBrand}
               className="group flex min-h-72 flex-col justify-between rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6 text-left transition-transform hover:-translate-y-1 hover:bg-white hover:shadow-2xl"
             >
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">{t('customerWeb')}</p>
-                <h2 className="mt-4 text-3xl font-semibold leading-tight text-slate-900">{t('openCustomerWeb')}</h2>
-                <p className="mt-3 max-w-md text-sm leading-6 text-slate-600">{t('homeGatewayCustomerText')}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">{t('brandOperatorPortal')}</p>
+                <h2 className="mt-4 text-3xl font-semibold leading-tight text-slate-900">{t('openBrandPortal')}</h2>
+                <p className="mt-3 max-w-md text-sm leading-6 text-slate-600">{t('brandOperatorPortalText')}</p>
               </div>
               <span className="mt-8 inline-flex w-fit rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">
-                {t('startCustomerExperience')}
+                {t('startBrandExperience')}
               </span>
             </button>
           </div>

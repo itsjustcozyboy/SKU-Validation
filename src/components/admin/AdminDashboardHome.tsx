@@ -7,10 +7,10 @@ interface Props {
   onCreateSkuHypothesis: () => void;
   onBuildSkuTest: () => void;
   onLoadSample: () => void;
-  onOpenCustomerPreview: () => void;
+  onOpenBrandPreview: () => void;
 }
 
-export default function AdminDashboardHome({ metrics, skuInput, onCreateSkuHypothesis, onBuildSkuTest, onLoadSample, onOpenCustomerPreview }: Props) {
+export default function AdminDashboardHome({ metrics, skuInput, onCreateSkuHypothesis, onBuildSkuTest, onLoadSample, onOpenBrandPreview }: Props) {
   const { t } = useLocale();
 
   return (
@@ -21,7 +21,7 @@ export default function AdminDashboardHome({ metrics, skuInput, onCreateSkuHypot
           <p className="text-sm text-slate-600">{t('simulatedDashboardTitle')}</p>
         </div>
         <div className="space-x-2">
-          <button onClick={onOpenCustomerPreview} className="rounded-lg border px-3 py-2">{t('openCustomerWeb')}</button>
+          <button onClick={onOpenBrandPreview} className="rounded-lg border px-3 py-2">{t('openCustomerWeb')}</button>
           <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">This is simulated/local data</span>
         </div>
       </div>

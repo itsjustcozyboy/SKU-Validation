@@ -40,7 +40,7 @@ const basePath = (() => {
   return '/';
 })();
 
-function getPortalFromPath(pathname: string): 'home' | 'admin' | 'customer' {
+function getPortalFromPath(pathname: string): 'home' | 'admin' | 'brand' {
   const normalizedPath = pathname.startsWith(basePath) ? pathname.slice(basePath.length) : pathname.replace(/^\/+/, '');
   const [portal] = normalizedPath.split('/').filter(Boolean).slice(-1);
 
@@ -48,14 +48,14 @@ function getPortalFromPath(pathname: string): 'home' | 'admin' | 'customer' {
     return 'admin';
   }
 
-  if (portal === 'customer') {
-    return 'customer';
+  if (portal === 'brand' || portal === 'customer') {
+    return 'brand';
   }
 
   return 'home';
 }
 
-function getPortalUrl(portal: 'home' | 'admin' | 'customer') {
+function getPortalUrl(portal: 'home' | 'admin' | 'brand') {
   if (portal === 'home') {
     return basePath;
   }
@@ -64,9 +64,9 @@ function getPortalUrl(portal: 'home' | 'admin' | 'customer') {
 }
 
 function App() {
-  const [portal, setPortal] = useState<'home' | 'admin' | 'customer'>('home');
+  const [portal, setPortal] = useState<'home' | 'admin' | 'brand'>('home');
   const [adminStep, setAdminStep] = useState<AppStep>('dashboard');
-  const [customerStep, setCustomerStep] = useState<'landing' | 'preview'>('landing');
+  const [brandStep, setBrandStep] = useState<'landing' | 'preview'>('landing');
   const [skuInput, setSkuInput] = useState<SkuInput>(samplePdrnCream);
   const [selectedHypothesis, setSelectedHypothesis] = useState<SkuHypothesis | null>(null);
   const [metrics, setMetrics] = useState<TestMetrics>(initialMetrics);
@@ -88,7 +88,7 @@ function App() {
     setSelectedHypothesis(null);
   }, []);
 
-  const openPortal = useCallback((nextPortal: 'home' | 'admin' | 'customer') => {
+  const openPortal = useCallback((nextPortal: 'home' | 'admin' | 'brand') => {
     window.history.pushState({}, '', getPortalUrl(nextPortal));
     setPortal(nextPortal);
   }, []);
@@ -106,10 +106,10 @@ function App() {
     setAdminStep('dashboard');
   };
 
-  const openCustomerWeb = () => {
-    openPortal('customer');
+  const openBrandPortal = () => {
+    openPortal('brand');
     resetTestState();
-    setCustomerStep('landing');
+    setBrandStep('landing');
   };
 
   const returnHome = () => {
@@ -119,7 +119,7 @@ function App() {
   const loadSample = () => {
     setSkuInput(samplePdrnCream);
     setMetrics(initialMetrics);
-    setCustomerStep('preview');
+    setBrandStep('preview');
   };
 
   const loadAdminSample = () => {
@@ -175,26 +175,26 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {portal === 'home' && <HomeGateway onOpenAdmin={openAdminConsole} onOpenCustomer={openCustomerWeb} />}
+      {portal === 'home' && <HomeGateway onOpenAdmin={openAdminConsole} onOpenBrand={openBrandPortal} />}
 
       {portal !== 'home' && (
         <Header
           onGoHome={returnHome}
           onOpenAdmin={portal === 'admin' ? openAdminConsole : undefined}
-          onOpenCustomer={portal === 'admin' ? openCustomerWeb : undefined}
+          onOpenBrand={portal === 'admin' ? openBrandPortal : undefined}
           activePortal={portal}
-          customerTitle={portal === 'customer' ? `${skuInput.brandName} — ${skuInput.productName}` : undefined}
+          brandTitle={portal === 'brand' ? `${skuInput.brandName} — ${skuInput.productName}` : undefined}
         />
       )}
 
-      {portal === 'customer' && (
+      {portal === 'brand' && (
         <>
-          {customerStep === 'landing' && (
+          {brandStep === 'landing' && (
             <CustomerLandingPage onStart={loadSample} onLoadSample={loadSample} />
           )}
 
-          {customerStep === 'preview' && (
-            <CustomerProductPage skuInput={skuInput} metrics={metrics} onAddMetrics={addMetrics} />
+          {brandStep === 'preview' && (
+            <CustomerProductPage skuInput={skuInput} onAddMetrics={addMetrics} />
           )}
         </>
       )}
@@ -228,9 +228,9 @@ function App() {
               onCreateSkuHypothesis={() => setAdminStep('hypothesis')}
               onBuildSkuTest={() => setAdminStep('form')}
               onLoadSample={loadAdminSample}
-              onOpenCustomerPreview={() => {
-                openCustomerWeb();
-                setCustomerStep('preview');
+              onOpenBrandPreview={() => {
+                openBrandPortal();
+                setBrandStep('preview');
               }}
             />
           )}
