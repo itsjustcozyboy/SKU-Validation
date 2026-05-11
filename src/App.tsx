@@ -7,7 +7,7 @@ import Report from './components/Report';
 import SkuForm from './components/SkuForm';
 import TestDashboard from './components/TestDashboard';
 import Header from './components/Header';
-import { AppStep, SkuInput, TestMetrics } from './types';
+import { AppStep, SkuHypothesis, SkuInput, TestMetrics } from './types';
 import { calculateDemandResult, simulateVisitors } from './utils/demandEngine';
 import { samplePdrnCream } from './utils/sampleData';
 
@@ -66,7 +66,7 @@ function App() {
   const [adminStep, setAdminStep] = useState<AppStep>('dashboard');
   const [customerStep, setCustomerStep] = useState<'landing' | 'preview'>('landing');
   const [skuInput, setSkuInput] = useState<SkuInput>(samplePdrnCream);
-  const [selectedHypothesis, setSelectedHypothesis] = useState<any | null>(null);
+  const [selectedHypothesis, setSelectedHypothesis] = useState<SkuHypothesis | null>(null);
   const [metrics, setMetrics] = useState<TestMetrics>(initialMetrics);
 
   useEffect(() => {
@@ -80,41 +80,41 @@ function App() {
     return () => window.removeEventListener('popstate', syncPortalFromLocation);
   }, []);
 
-  const resetAdminFlow = () => {
-    setAdminStep('dashboard');
+  const resetTestState = useCallback(() => {
     setSkuInput(samplePdrnCream);
     setMetrics(initialMetrics);
     setSelectedHypothesis(null);
+  }, []);
+
+  const openPortal = useCallback((nextPortal: 'home' | 'admin' | 'customer') => {
+    window.history.pushState({}, '', getPortalUrl(nextPortal));
+    setPortal(nextPortal);
+  }, []);
+
+  const resetAdminFlow = () => {
+    setAdminStep('dashboard');
+    resetTestState();
   };
 
   const resetCustomerFlow = () => {
     setCustomerStep('landing');
-    setSkuInput(samplePdrnCream);
-    setMetrics(initialMetrics);
-    setSelectedHypothesis(null);
+    resetTestState();
   };
 
   const openAdminConsole = () => {
-    window.history.pushState({}, '', getPortalUrl('admin'));
-    setPortal('admin');
-    setSkuInput(samplePdrnCream);
-    setMetrics(initialMetrics);
-    setSelectedHypothesis(null);
+    openPortal('admin');
+    resetTestState();
     setAdminStep('dashboard');
   };
 
   const openCustomerWeb = () => {
-    window.history.pushState({}, '', getPortalUrl('customer'));
-    setPortal('customer');
-    setSkuInput(samplePdrnCream);
-    setMetrics(initialMetrics);
-    setSelectedHypothesis(null);
+    openPortal('customer');
+    resetTestState();
     setCustomerStep('landing');
   };
 
   const returnHome = () => {
-    window.history.pushState({}, '', getPortalUrl('home'));
-    setPortal('home');
+    openPortal('home');
   };
 
   const loadSample = () => {
@@ -129,7 +129,7 @@ function App() {
     setAdminStep('form');
   };
 
-  const handleUseHypothesis = (hypo: any) => {
+  const handleUseHypothesis = (hypo: SkuHypothesis) => {
     const input: SkuInput = {
       brandName: hypo.name.split(' ')[0] || hypo.name,
       productName: hypo.name,

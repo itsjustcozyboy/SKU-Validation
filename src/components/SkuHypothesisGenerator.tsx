@@ -56,6 +56,19 @@ const concernLabelMap: Record<string, string> = {
   'Daily glow': 'Daily Glow',
 };
 
+const knownIngredients = [
+  'Panthenol', 'PDRN', 'Peptide', 'Niacinamide', 'Centella Asiatica', 'Madecassoside', 'Snail', 'Mucin', 'Rice',
+  'Propolis', 'Honey', 'Retinol', 'Collagen', 'Hyaluronic Acid', 'Ceramide', 'Adenosine', 'Allantoin',
+  'PHA', 'AHA', 'BHA', 'Salicylic Acid', 'Vitamin C', 'Green Tea', 'Tea Tree', 'Arbutin', 'CICA', 'SPF',
+];
+
+const categoryIngredientMap: Record<string, string[]> = {
+  Cream: ['Ceramide', 'Shea Butter', 'Squalane', 'Panthenol', 'Hyaluronic Acid'],
+  Serum: ['Niacinamide', 'Peptide', 'Adenosine', 'Hyaluronic Acid', 'Vitamin C'],
+  'Toner Pad': ['AHA', 'PHA', 'Niacinamide', 'Panthenol'],
+  'Mask Pack': ['Snail', 'Propolis', 'Honey', 'Rice'],
+};
+
 type StepType = 'step1' | 'step2' | 'step3' | 'results';
 
 export default function SkuHypothesisGenerator({ onUseHypothesis }: Props) {
@@ -70,19 +83,6 @@ export default function SkuHypothesisGenerator({ onUseHypothesis }: Props) {
   const [priceRange, setPriceRange] = useState('$25-$35');
   const [brandTone, setBrandTone] = useState('Minimal');
   const [hypotheses, setHypotheses] = useState<SkuHypothesis[]>([]);
-
-  const knownIngredients = [
-    'Panthenol', 'PDRN', 'Peptide', 'Niacinamide', 'Centella Asiatica', 'Madecassoside', 'Snail', 'Mucin', 'Rice',
-    'Propolis', 'Honey', 'Retinol', 'Collagen', 'Hyaluronic Acid', 'Ceramide', 'Adenosine', 'Allantoin',
-    'PHA', 'AHA', 'BHA', 'Salicylic Acid', 'Vitamin C', 'Green Tea', 'Tea Tree', 'Arbutin', 'CICA', 'SPF',
-  ];
-
-  const categoryIngredientMap: Record<string, string[]> = {
-    'Cream': ['Ceramide', 'Shea Butter', 'Squalane', 'Panthenol', 'Hyaluronic Acid'],
-    'Serum': ['Niacinamide', 'Peptide', 'Adenosine', 'Hyaluronic Acid', 'Vitamin C'],
-    'Toner Pad': ['AHA', 'PHA', 'Niacinamide', 'Panthenol'],
-    'Mask Pack': ['Snail', 'Propolis', 'Honey', 'Rice'],
-  };
 
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
@@ -101,7 +101,7 @@ export default function SkuHypothesisGenerator({ onUseHypothesis }: Props) {
     if (!ingredientInput.trim()) {
       setSuggestions(getCategorySuggestions(category));
     }
-  }, [category]);
+  }, [category, heroIngredients, ingredientInput]);
 
   const addIngredient = (ing: string) => {
     if (!ing || heroIngredients.includes(ing)) return;

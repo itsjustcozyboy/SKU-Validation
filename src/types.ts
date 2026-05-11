@@ -55,5 +55,3 @@ export interface SkuHypothesis {
   testHypothesis: string;
   productionCaution: string;
 }
-
-export type AppStepExtended = AppStep | 'hypothesis';

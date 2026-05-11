@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 const configDir = path.dirname(fileURLToPath(import.meta.url));
 
-export default defineConfig({
-  base: '/SKU-Validation/',
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? '/SKU-Validation/' : '/',
   plugins: [react()],
   build: {
     rollupOptions: {
@@ -24,4 +24,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

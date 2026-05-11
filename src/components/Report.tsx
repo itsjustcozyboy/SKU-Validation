@@ -1,11 +1,11 @@
-import { DemandResult, SkuInput, TestMetrics } from '../types';
+import { DemandResult, SkuHypothesis, SkuInput, TestMetrics } from '../types';
 import { useLocale } from '../LocaleProvider';
 
 interface ReportProps {
   skuInput: SkuInput;
   metrics: TestMetrics;
   demandResult: DemandResult;
-  selectedHypothesis?: any | null;
+  selectedHypothesis?: SkuHypothesis | null;
   onBackToDashboard: () => void;
   onReset: () => void;
 }
