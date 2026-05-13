@@ -1,26 +1,26 @@
-# Implementation Plan - K-Beauty SKU Validation MVP
+# 구현 계획 - K-Beauty SKU Validation MVP
 
-## Priority 1
-1. SKU Generator input model
-2. Mock/rule-based generation of 3 candidates
-3. Candidate comparison surface
-4. Landing page generation per candidate
-5. Demo-ready with seed data
+## 우선순위 1
+1. SKU 생성기 입력 모델
+2. Mock/규칙 기반 후보 3개 생성
+3. 후보 비교 화면
+4. 후보별 랜딩페이지 생성
+5. 시드 데이터가 포함된 데모 준비
 
-## Priority 2
-1. Event tracking model (`page_view`, `hero_cta_click`, `price_response`, `survey_submit`, `email_submit`, `scroll_depth`, `time_on_page`, `page_leave`)
-2. UTM capture and session persistence
-3. Lead/survey persistence
-4. Admin dashboard metrics
+## 우선순위 2
+1. 이벤트 추적 모델 (`page_view`, `hero_cta_click`, `price_response`, `survey_submit`, `email_submit`, `scroll_depth`, `time_on_page`, `page_leave`)
+2. UTM 수집 및 세션 유지
+3. 리드/설문 저장
+4. 관리자 대시보드 지표
 
-## Priority 3
-1. Validation Score engine
-2. Candidate recommendation engine
-3. Candidate report page
-4. Manual ad-performance input
+## 우선순위 3
+1. Validation Score 엔진
+2. 후보 추천 엔진
+3. 후보 리포트 페이지
+4. 수동 광고 성과 입력
 
-## Priority 4
-1. LLM live provider integration
-2. Meta pixel wrapper cleanup
-3. UI polish
-4. Mobile optimization
+## 우선순위 4
+1. LLM 실서비스 제공자 연동
+2. Meta pixel 래퍼 정리
+3. UI 다듬기
+4. 모바일 최적화
